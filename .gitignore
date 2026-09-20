@@ -1,0 +1,16 @@
+.env
+*.pem
+*.key
+*.crt
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+*.log
+data/
+simulazione/output/
+
+.DS_Store
+Thumbs.db

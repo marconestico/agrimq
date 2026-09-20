@@ -1,0 +1,27 @@
+# Sensori come container a sé, publisher MQTT. Senza broker invece girano come
+# child process dentro il backend.
+# Build context: cartella del prototipo, come gli altri Dockerfile.
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# paho-mqtt. Layer separato per la cache.
+COPY backend/sensor-service/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# si tiene la profondità backend/sensor-service/ perché sensori.py cerca il
+# geojson due livelli sopra lo script
+COPY backend/sensor-service/ ./backend/sensor-service/
+COPY assets/geo/ ./assets/geo/
+
+# default dev, il compose li sovrascrive
+ENV MQTT_HOST=rabbitmq \
+    MQTT_PORT=1883 \
+    MQTT_USER=agri \
+    MQTT_PASS=agri \
+    SENSOR_INTERVAL=1.5 \
+    PYTHONUNBUFFERED=1
+
+# il trasporto MQTT si attiva con SENSOR_TRANSPORT=mqtt (vedi compose)
+WORKDIR /app/backend/sensor-service
+CMD ["python", "sensori.py"]

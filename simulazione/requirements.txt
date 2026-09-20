@@ -1,0 +1,3 @@
+# Dipendenze del simulatore di scenari (client AMQP + Management API)
+pika>=1.3
+requests>=2.31

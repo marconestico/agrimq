@@ -1,0 +1,17 @@
+{
+  "name": "agri-backend-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Server applicativo Node.js (HTTP/REST/SSE) + data provider per il middleware agri-tech (PW 12)",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

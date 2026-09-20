@@ -1,0 +1,3 @@
+# Dipendenze Python del servizio sensori — FASE BROKER.
+# In fase mock il servizio usa solo la stdlib; il trasporto MQTT aggiunge paho-mqtt.
+paho-mqtt>=2.0

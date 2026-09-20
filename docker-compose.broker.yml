@@ -1,0 +1,114 @@
+services:
+  # broker RabbitMQ - AMQP + MQTT
+  # config in config/rabbitmq/Dockerfile.
+  rabbitmq:
+    build:
+      context: .
+      dockerfile: config/rabbitmq/Dockerfile
+    container_name: agri-rabbitmq
+    hostname: agri-rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=agri
+      - RABBITMQ_DEFAULT_PASS=agri
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # UI  
+      - "1883:1883"     # MQTT (plugin rabbitmq_mqtt)
+    healthcheck:
+      # health check ok solo quando ping risponde
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  # broker edge - mosquitto MQTT
+  # config in config/mosquitto/Dockerfile.
+  mosquitto:
+    build:
+      context: .
+      dockerfile: config/mosquitto/Dockerfile
+    container_name: agri-mosquitto
+    ports:
+      - "1884:1883"     # MQTT edge
+      - "9101:9001"     # WebSockets
+    volumes:
+      - mosquitto-data:/mosquitto/data
+    depends_on:
+      rabbitmq:
+        condition: service_started
+    restart: unless-stopped
+
+  # servizio sensori (publisher MQTT)
+  sensor-service:
+    build:
+      context: .
+      dockerfile: backend/sensor-service/Dockerfile.broker
+    container_name: agri-sensor-service
+    environment:
+      - SENSOR_TRANSPORT=mqtt   # attiva il trasporto MQTT in sensori.py
+      - MQTT_HOST=rabbitmq     # pubblica direttamente sul listener MQTT di RabbitMQ
+      - MQTT_PORT=1883
+      - MQTT_USER=agri
+      - MQTT_PASS=agri
+      - SENSOR_INTERVAL=1.5
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # backend node.js (Express + RabbitMQ)
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: agri-backend
+    environment:
+      - PORT=8000
+      # config datasource RabbitMQ
+      - RABBITMQ_URL=amqp://agri:agri@rabbitmq:5672/
+      - RABBITMQ_EXCHANGE=amq.topic
+      - RABBITMQ_QUEUE=telemetria
+      - RABBITMQ_BINDING=farm.#
+      # index.js deve usare rabbitSource
+      - DATASOURCE=rabbit
+    ports:
+      - "8000:8000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # harness scenario per testare il sistema con simulazione di sensori e backend
+  # Per eseguire i test lanciare il comando: docker compose -f docker-compose.broker.yml --profile sim run --rm simulazione
+  simulazione:
+    build:
+      context: .
+      dockerfile: simulazione/Dockerfile
+    container_name: agri-simulazione
+    profiles: ["sim"]
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_MGMT_PORT=15672
+      - RABBITMQ_USER=agri
+      - RABBITMQ_PASS=agri
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: "no"
+
+  # frontend react/nginx
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: agri-frontend
+    ports:
+      - "8090:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mosquitto-data:

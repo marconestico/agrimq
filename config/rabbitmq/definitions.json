@@ -1,0 +1,100 @@
+{
+  "_commento": [
+    "Definizioni dichiarative RabbitMQ — FASE BROKER (dev).",
+    "L'utente 'agri' (password 'agri') e' creato da rabbitmq.conf via default_user/default_pass;",
+    "qui definiamo permessi, exchange, code durable, binding e DLQ.",
+    "Mapping topic: MQTT farm/<campo>/<tipo>  ==  AMQP routing key farm.<campo>.<tipo> su amq.topic.",
+    "Credenziali dev documentate anche in backend/docs/BROKER.md."
+  ],
+  "rabbit_version": "3.13.0",
+  "users": [
+    {
+      "name": "agri",
+      "password_hash": "pFN9DFE+/8RCBTcV3zoftK71Xyb3eM5pKd2nppswguYM1KnB",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["administrator"]
+    }
+  ],
+  "vhosts": [
+    { "name": "/" }
+  ],
+  "permissions": [
+    {
+      "user": "agri",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "topic_permissions": [
+    {
+      "user": "agri",
+      "vhost": "/",
+      "exchange": "amq.topic",
+      "write": "^farm\\..*",
+      "read": "^farm\\..*"
+    }
+  ],
+  "parameters": [],
+  "policies": [
+    {
+      "vhost": "/",
+      "name": "ha-telemetria",
+      "pattern": "^telemetria",
+      "apply-to": "queues",
+      "priority": 0,
+      "definition": {
+        "queue-mode": "lazy"
+      }
+    }
+  ],
+  "queues": [
+    {
+      "name": "telemetria",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "dlx",
+        "x-dead-letter-routing-key": "telemetria.dlq"
+      }
+    },
+    {
+      "name": "telemetria.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "dlx",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "amq.topic",
+      "vhost": "/",
+      "destination": "telemetria",
+      "destination_type": "queue",
+      "routing_key": "farm.#",
+      "arguments": {}
+    },
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "telemetria.dlq",
+      "destination_type": "queue",
+      "routing_key": "telemetria.dlq",
+      "arguments": {}
+    }
+  ]
+}

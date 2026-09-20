@@ -1,0 +1,28 @@
+{
+  "nome_dataset": "rilevamento_campi",
+  "sorgente": "rilevamento_campi.kml",
+  "n_appezzamenti": 13,
+  "area_totale_m2": 3368.1,
+  "area_totale_ha": 0.3368,
+  "bbox": [
+    12.7052852,
+    41.84795907,
+    12.70700517,
+    41.84845293
+  ],
+  "centro": [
+    12.70614518,
+    41.848206
+  ],
+  "zoom_iniziale": 19,
+  "tile_layer": {
+    "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "attribution": "&copy; OpenStreetMap contributors",
+    "max_zoom": 19
+  },
+  "colture": [
+    "olivo",
+    "seminativo",
+    "terrazzamento"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "_nota": "FASE BROKER — NON e' il package.json reale. NON sovrascrivere backend/server/package.json.",
+  "_istruzioni": [
+    "Il datasource rabbitSource.js richiede la dipendenza 'amqplib'.",
+    "In fase di integrazione aggiungere la riga sotto in 'dependencies' di backend/server/package.json,",
+    "oppure eseguire dentro backend/server:  npm install amqplib@^0.10.4",
+    "Vedi INTEGRATION.md, sezione 'package.json / Dockerfile'."
+  ],
+  "dependencies_da_aggiungere": {
+    "amqplib": "^0.10.4"
+  }
+}

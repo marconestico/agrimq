@@ -1,0 +1,3 @@
+# Dipendenze Python del prototipo (fase implementativa)
+paho-mqtt>=2.0
+pika>=1.3

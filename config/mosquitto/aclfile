@@ -1,0 +1,9 @@
+# ACL per topic, dev.
+
+user agri
+# telemetria dai sensori
+topic write farm/#
+# comandi: i sensori leggono, il backend scrive
+topic readwrite farm/+/cmd
+# lettura per debug e dashboard
+topic read farm/#
